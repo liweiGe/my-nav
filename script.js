@@ -95,20 +95,7 @@ backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// ========== 用户认证与收藏系统 ==========
-const userBtn = document.getElementById('userBtn');
-const authModal = document.getElementById('authModal');
-const authModalClose = document.getElementById('authModalClose');
-const authPhone = document.getElementById('authPhone');
-const authCode = document.getElementById('authCode');
-const authError = document.getElementById('authError');
-const authSubmit = document.getElementById('authSubmit');
-const sendCodeBtn = document.getElementById('sendCodeBtn');
-const codeHint = document.getElementById('codeHint');
-const codeDisplay = document.getElementById('codeDisplay');
-const loginTabs = document.querySelectorAll('.login-tab');
-const panePhone = document.getElementById('panePhone');
-const paneWechat = document.getElementById('paneWechat');
+// ========== 本地收藏系统 ==========
 const bookmarkSection = document.getElementById('bookmarkSection');
 const bookmarkGrid = document.getElementById('bookmarkGrid');
 const bookmarkEmpty = document.getElementById('bookmarkEmpty');
@@ -122,176 +109,36 @@ const bmDesc = document.getElementById('bmDesc');
 const bmIcon = document.getElementById('bmIcon');
 const bmError = document.getElementById('bmError');
 const bmSubmit = document.getElementById('bmSubmit');
-const userPanel = document.getElementById('userPanel');
-const userPanelClose = document.getElementById('userPanelClose');
-const panelUsername = document.getElementById('panelUsername');
-const panelCount = document.getElementById('panelCount');
-const logoutBtn = document.getElementById('logoutBtn');
 const colorOpts = document.querySelectorAll('.color-opt');
 
 let selectedColor = '#6366f1';
 let editingIndex = -1;
-let generatedCode = '';
-let codeTimer = null;
-
-function getCurrentUser() {
-    return localStorage.getItem('nav-current-user');
-}
-
-function getUserData(phone) {
-    const raw = localStorage.getItem('nav-user-' + phone);
-    return raw ? JSON.parse(raw) : null;
-}
-
-function setUserData(phone, data) {
-    localStorage.setItem('nav-user-' + phone, JSON.stringify(data));
-}
 
 function getBookmarks() {
-    const user = getCurrentUser();
-    if (!user) return [];
-    const data = getUserData(user);
-    return data ? (data.bookmarks || []) : [];
+    const raw = localStorage.getItem('nav-bookmarks');
+    return raw ? JSON.parse(raw) : [];
 }
 
 function saveBookmarks(bookmarks) {
-    const user = getCurrentUser();
-    if (!user) return;
-    const data = getUserData(user) || {};
-    data.bookmarks = bookmarks;
-    setUserData(user, data);
+    localStorage.setItem('nav-bookmarks', JSON.stringify(bookmarks));
 }
 
-// --- 登录状态 UI ---
-function updateAuthUI() {
-    const user = getCurrentUser();
-    if (user) {
-        userBtn.classList.add('logged-in');
-        userBtn.title = user;
-        bookmarkSection.style.display = '';
-        renderBookmarks();
-    } else {
-        userBtn.classList.remove('logged-in');
-        userBtn.title = '登录/用户';
-        bookmarkSection.style.display = 'none';
-    }
-}
-
-// --- 弹窗通用 ---
+// --- 弹窗 ---
 function openModal(modal) { modal.classList.add('active'); }
 function closeModal(modal) { modal.classList.remove('active'); }
 
-// --- 登录标签页切换 ---
-loginTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        loginTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const isPhone = tab.dataset.tab === 'phone';
-        panePhone.classList.toggle('active', isPhone);
-        paneWechat.classList.toggle('active', !isPhone);
-    });
-});
-
-// 点击用户按钮
-userBtn.addEventListener('click', () => {
-    const user = getCurrentUser();
-    if (user) {
-        panelUsername.textContent = user;
-        panelCount.textContent = getBookmarks().length;
-        openModal(userPanel);
-    } else {
-        // 重置登录弹窗状态
-        authPhone.value = '';
-        authCode.value = '';
-        authError.textContent = '';
-        codeHint.classList.add('hidden');
-        generatedCode = '';
-        openModal(authModal);
-    }
-});
-
-// 关闭弹窗
-authModalClose.addEventListener('click', () => closeModal(authModal));
 bookmarkModalClose.addEventListener('click', () => closeModal(bookmarkModal));
-userPanelClose.addEventListener('click', () => closeModal(userPanel));
-[authModal, bookmarkModal, userPanel].forEach(m => {
-    m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
-});
+bookmarkModal.addEventListener('click', e => { if (e.target === bookmarkModal) closeModal(bookmarkModal); });
 
-// 验证手机号格式
-function isValidPhone(phone) {
-    return /^1[3-9]\d{9}$/.test(phone);
-}
-
-// 发送验证码（模拟）
-sendCodeBtn.addEventListener('click', () => {
-    const phone = authPhone.value.trim();
-    authError.textContent = '';
-    if (!isValidPhone(phone)) {
-        authError.textContent = '请输入正确的11位手机号';
-        return;
-    }
-    // 生成6位随机验证码
-    generatedCode = String(Math.floor(100000 + Math.random() * 900000));
-    codeDisplay.textContent = generatedCode;
-    codeHint.classList.remove('hidden');
-
-    // 倒计时 60 秒
-    let seconds = 60;
-    sendCodeBtn.disabled = true;
-    sendCodeBtn.textContent = seconds + 's';
-    if (codeTimer) clearInterval(codeTimer);
-    codeTimer = setInterval(() => {
-        seconds--;
-        if (seconds <= 0) {
-            clearInterval(codeTimer);
-            codeTimer = null;
-            sendCodeBtn.disabled = false;
-            sendCodeBtn.textContent = '获取验证码';
-        } else {
-            sendCodeBtn.textContent = seconds + 's';
-        }
-    }, 1000);
-});
-
-// 提交登录
-authSubmit.addEventListener('click', () => {
-    const phone = authPhone.value.trim();
-    const code = authCode.value.trim();
-    authError.textContent = '';
-
-    if (!isValidPhone(phone)) { authError.textContent = '请输入正确的11位手机号'; return; }
-    if (!generatedCode) { authError.textContent = '请先获取验证码'; return; }
-    if (code !== generatedCode) { authError.textContent = '验证码错误'; return; }
-
-    // 如果用户不存在则自动注册
-    if (!getUserData(phone)) {
-        setUserData(phone, { bookmarks: [] });
-    }
-    localStorage.setItem('nav-current-user', phone);
-    generatedCode = '';
-    closeModal(authModal);
-    updateAuthUI();
-});
-
-// 退出登录
-logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('nav-current-user');
-    closeModal(userPanel);
-    updateAuthUI();
-});
-
-// --- 收藏管理 ---
+// --- 渲染收藏 ---
 function renderBookmarks() {
     const bookmarks = getBookmarks();
+    bookmarkGrid.querySelectorAll('.nav-card').forEach(c => c.remove());
     if (bookmarks.length === 0) {
         bookmarkEmpty.style.display = '';
-        bookmarkGrid.querySelectorAll('.nav-card').forEach(c => c.remove());
         return;
     }
     bookmarkEmpty.style.display = 'none';
-    // 清除旧的卡片
-    bookmarkGrid.querySelectorAll('.nav-card').forEach(c => c.remove());
     bookmarks.forEach((bm, idx) => {
         const card = document.createElement('a');
         card.className = 'nav-card';
@@ -382,8 +229,8 @@ bmSubmit.addEventListener('click', () => {
     renderBookmarks();
 });
 
-// 初始化用户状态
-updateAuthUI();
+// 初始渲染
+renderBookmarks();
 
 // ========== 快捷键 ==========
 document.addEventListener('keydown', e => {
