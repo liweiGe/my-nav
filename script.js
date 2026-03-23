@@ -96,25 +96,11 @@ backToTop.addEventListener('click', () => {
 });
 
 // ========== 热点资讯 ==========
-const TRENDING_API = 'https://dailyhot.hkg1.zeabur.app';
-const TRENDING_APIS = [
-    'https://dailyhot.hkg1.zeabur.app',
-    'https://api-hot.efefee.cn'
-];
-
-const TRENDING_CONFIG = {
-    weibo:    { name: '微博热搜', color: '#ff4d4f' },
-    zhihu:    { name: '知乎热榜', color: '#0084ff' },
-    baidu:    { name: '百度热搜', color: '#306cff' },
-    bilibili: { name: 'B站热门',  color: '#fb7299' },
-    douyin:   { name: '抖音热搜', color: '#111' },
-    toutiao:  { name: '头条热榜', color: '#ff4d4f' },
-    '36kr':   { name: '36氪热榜', color: '#0478f2' },
-    ithome:   { name: 'IT之家',   color: '#d32f2f' }
-};
+const MOMOYU_API = 'https://momoyu.cc/api/hot/list';
 
 let currentTrending = 'weibo';
-let trendingCache = {};
+let momoyuData = null;
+let momoyuFetchTime = 0;
 
 const trendingList = document.getElementById('trendingList');
 const trendingLoading = document.getElementById('trendingLoading');
@@ -124,67 +110,66 @@ const refreshBtn = document.getElementById('refreshBtn');
 const retryBtn = document.getElementById('retryBtn');
 const trendingTabs = document.querySelectorAll('.trending-tab');
 
-async function fetchTrending(type, forceRefresh) {
-    // 检查缓存 (5分钟有效)
-    if (!forceRefresh && trendingCache[type] && (Date.now() - trendingCache[type].time < 300000)) {
-        renderTrending(trendingCache[type].data);
-        trendingUpdateTime.textContent = '更新于 ' + new Date(trendingCache[type].time).toLocaleTimeString('zh-CN');
-        return;
+async function fetchAllTrending(forceRefresh) {
+    // 缓存 5 分钟
+    if (!forceRefresh && momoyuData && (Date.now() - momoyuFetchTime < 300000)) {
+        return momoyuData;
     }
 
+    const res = await fetch(MOMOYU_API);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.status !== 100000 || !json.data) throw new Error('Invalid response');
+
+    // 按 source_key 建立索引
+    const map = {};
+    json.data.forEach(function(platform) {
+        map[platform.source_key] = platform.data || [];
+    });
+    momoyuData = map;
+    momoyuFetchTime = Date.now();
+    return map;
+}
+
+async function showTrending(type, forceRefresh) {
     trendingList.classList.add('hidden');
     trendingError.classList.remove('visible');
     trendingLoading.classList.remove('hidden');
 
-    for (const apiBase of TRENDING_APIS) {
-        try {
-            const res = await fetch(apiBase + '/' + type + '?cache=false');
-            if (!res.ok) continue;
-            const json = await res.json();
-            const items = json.data || [];
-            if (items.length === 0) continue;
-
-            trendingCache[type] = { data: items, time: Date.now() };
-            renderTrending(items);
-            trendingUpdateTime.textContent = '更新于 ' + new Date().toLocaleTimeString('zh-CN');
-            trendingLoading.classList.add('hidden');
-            return;
-        } catch (_) { /* try next API */ }
+    try {
+        const data = await fetchAllTrending(forceRefresh);
+        const items = data[type] || [];
+        if (items.length === 0) throw new Error('No data');
+        renderTrending(items);
+        trendingUpdateTime.textContent = '更新于 ' + new Date(momoyuFetchTime).toLocaleTimeString('zh-CN');
+        trendingLoading.classList.add('hidden');
+    } catch (_) {
+        trendingLoading.classList.add('hidden');
+        trendingError.classList.add('visible');
     }
-
-    // 所有 API 都失败
-    trendingLoading.classList.add('hidden');
-    trendingError.classList.add('visible');
 }
 
 function renderTrending(items) {
-    const list = items.slice(0, 30);
-    trendingList.innerHTML = list.map((item, i) => {
-        const rank = i + 1;
-        const rankClass = rank <= 3 ? ' top-' + rank : '';
-        const title = escapeHtml(item.title || '');
-        const hot = item.hot ? formatHot(item.hot) : '';
-        const url = item.url || item.mobileUrl || '#';
+    var list = items.slice(0, 30);
+    trendingList.innerHTML = list.map(function(item, i) {
+        var rank = i + 1;
+        var rankClass = rank <= 3 ? ' top-' + rank : '';
+        var title = escapeHtml(item.title || '');
+        var hot = item.extra || '';
+        var url = item.link || item.url || '#';
         return '<a class="trending-item" href="' + url + '" target="_blank" rel="noopener">' +
             '<span class="trending-rank' + rankClass + '">' + rank + '</span>' +
             '<span class="trending-title">' + title + '</span>' +
-            (hot ? '<span class="trending-hot">' + hot + '</span>' : '') +
+            (hot ? '<span class="trending-hot">' + escapeHtml(hot) + '</span>' : '') +
             '</a>';
     }).join('');
     trendingList.classList.remove('hidden');
 }
 
 function escapeHtml(str) {
-    const div = document.createElement('div');
+    var div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
-}
-
-function formatHot(num) {
-    if (typeof num === 'string') num = parseInt(num, 10);
-    if (isNaN(num)) return '';
-    if (num >= 10000) return (num / 10000).toFixed(1) + '万';
-    return String(num);
 }
 
 // Tab 切换
@@ -193,25 +178,25 @@ trendingTabs.forEach(tab => {
         trendingTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         currentTrending = tab.dataset.type;
-        fetchTrending(currentTrending, false);
+        showTrending(currentTrending, false);
     });
 });
 
 // 刷新
 refreshBtn.addEventListener('click', () => {
     refreshBtn.classList.add('spinning');
-    fetchTrending(currentTrending, true).finally(() => {
+    showTrending(currentTrending, true).finally(() => {
         setTimeout(() => refreshBtn.classList.remove('spinning'), 500);
     });
 });
 
 // 重试
 retryBtn.addEventListener('click', () => {
-    fetchTrending(currentTrending, true);
+    showTrending(currentTrending, true);
 });
 
 // 初始加载
-fetchTrending('weibo', false);
+showTrending('weibo', false);
 
 // ========== 快捷键 ==========
 document.addEventListener('keydown', e => {
