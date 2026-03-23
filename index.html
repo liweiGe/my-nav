@@ -328,6 +328,46 @@
         </div>
     </main>
 
+    <!-- 热点资讯 -->
+    <section class="trending-section">
+        <div class="container">
+            <div class="section-header">
+                <h2><span class="section-icon">🔥</span> 热点资讯</h2>
+                <a href="https://momoyu.cc/" target="_blank" rel="noopener" class="trending-source">数据来源: 摸摸鱼</a>
+            </div>
+            <div class="trending-tabs">
+                <button class="trending-tab active" data-type="weibo">微博</button>
+                <button class="trending-tab" data-type="zhihu">知乎</button>
+                <button class="trending-tab" data-type="baidu">百度</button>
+                <button class="trending-tab" data-type="bilibili">B站</button>
+                <button class="trending-tab" data-type="douyin">抖音</button>
+                <button class="trending-tab" data-type="toutiao">头条</button>
+                <button class="trending-tab" data-type="36kr">36氪</button>
+                <button class="trending-tab" data-type="ithome">IT之家</button>
+            </div>
+            <div class="trending-content">
+                <div class="trending-loading" id="trendingLoading">
+                    <div class="loading-spinner"></div>
+                    <p>正在加载热点资讯...</p>
+                </div>
+                <ul class="trending-list" id="trendingList"></ul>
+                <div class="trending-error" id="trendingError">
+                    <p>😅 加载失败，请稍后重试</p>
+                    <button class="retry-btn" id="retryBtn">重新加载</button>
+                </div>
+            </div>
+            <div class="trending-footer">
+                <span id="trendingUpdateTime"></span>
+                <button class="refresh-btn" id="refreshBtn" title="刷新数据">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m0 0a9 9 0 0 1 9-9m-9 9a9 9 0 0 0 9 9"></path>
+                    </svg>
+                    刷新
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- 页脚 -->
     <footer class="footer">
         <div class="container">
