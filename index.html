@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人导航 - 我的常用网站</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🧭</span>
+                <h1>个人导航</h1>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="搜索网站..." autocomplete="off">
+                </div>
+                <button class="theme-toggle" id="themeToggle" title="切换主题">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 快捷搜索 -->
+    <section class="quick-search">
+        <div class="container">
+            <div class="search-engines">
+                <button class="engine-btn active" data-engine="baidu">百度</button>
+                <button class="engine-btn" data-engine="google">Google</button>
+                <button class="engine-btn" data-engine="bing">Bing</button>
+                <button class="engine-btn" data-engine="github">GitHub</button>
+            </div>
+            <div class="main-search">
+                <input type="text" id="mainSearch" placeholder="输入关键词搜索...">
+                <button id="searchBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 导航主体 -->
+    <main class="main-content">
+        <div class="container">
+
+            <!-- 常用工具 -->
+            <section class="nav-section" data-category="常用工具">
+                <div class="section-header">
+                    <h2><span class="section-icon">⭐</span> 常用工具</h2>
+                </div>
+                <div class="nav-grid">
+                    <a href="https://www.google.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #4285f4, #34a853)">G</div>
+                        <div class="card-info">
+                            <h3>Google</h3>
+                            <p>全球最大搜索引擎</p>
+                        </div>
+                    </a>
+                    <a href="https://github.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #333, #24292e)">
+                            <svg viewBox="0 0 24 24" fill="white" width="24" height="24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </div>
+                        <div class="card-info">
+                            <h3>GitHub</h3>
+                            <p>代码托管平台</p>
+                        </div>
+                    </a>
+                    <a href="https://chat.openai.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #10a37f, #1a7f64)">AI</div>
+                        <div class="card-info">
+                            <h3>ChatGPT</h3>
+                            <p>AI 智能对话助手</p>
+                        </div>
+                    </a>
+                    <a href="https://www.notion.so" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #000, #333)">N</div>
+                        <div class="card-info">
+                            <h3>Notion</h3>
+                            <p>笔记与知识管理</p>
+                        </div>
+                    </a>
+                    <a href="https://translate.google.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #4285f4, #5e97f6)">译</div>
+                        <div class="card-info">
+                            <h3>Google 翻译</h3>
+                            <p>多语言在线翻译</p>
+                        </div>
+                    </a>
+                    <a href="https://stackoverflow.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #f48024, #e87922)">SO</div>
+                        <div class="card-info">
+                            <h3>Stack Overflow</h3>
+                            <p>编程问答社区</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 开发工具 -->
+            <section class="nav-section" data-category="开发工具">
+                <div class="section-header">
+                    <h2><span class="section-icon">🛠️</span> 开发工具</h2>
+                </div>
+                <div class="nav-grid">
+                    <a href="https://code.visualstudio.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #007acc, #0065a9)">VS</div>
+                        <div class="card-info">
+                            <h3>VS Code</h3>
+                            <p>轻量级代码编辑器</p>
+                        </div>
+                    </a>
+                    <a href="https://codepen.io" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #1e1f26, #3d3d3d)">CP</div>
+                        <div class="card-info">
+                            <h3>CodePen</h3>
+                            <p>在线代码编辑器</p>
+                        </div>
+                    </a>
+                    <a href="https://vercel.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #000, #333)">▲</div>
+                        <div class="card-info">
+                            <h3>Vercel</h3>
+                            <p>前端部署平台</p>
+                        </div>
+                    </a>
+                    <a href="https://www.npmjs.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #cb3837, #a02725)">npm</div>
+                        <div class="card-info">
+                            <h3>npm</h3>
+                            <p>Node 包管理器</p>
+                        </div>
+                    </a>
+                    <a href="https://developer.mozilla.org" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #83d0f2, #3781c2)">MDN</div>
+                        <div class="card-info">
+                            <h3>MDN</h3>
+                            <p>Web 开发文档</p>
+                        </div>
+                    </a>
+                    <a href="https://caniuse.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #e44d26, #c0392b)">CU</div>
+                        <div class="card-info">
+                            <h3>Can I Use</h3>
+                            <p>浏览器兼容性查询</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 设计资源 -->
+            <section class="nav-section" data-category="设计资源">
+                <div class="section-header">
+                    <h2><span class="section-icon">🎨</span> 设计资源</h2>
+                </div>
+                <div class="nav-grid">
+                    <a href="https://www.figma.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #f24e1e, #a259ff)">F</div>
+                        <div class="card-info">
+                            <h3>Figma</h3>
+                            <p>在线设计协作工具</p>
+                        </div>
+                    </a>
+                    <a href="https://dribbble.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #ea4c89, #c2185b)">D</div>
+                        <div class="card-info">
+                            <h3>Dribbble</h3>
+                            <p>设计师作品展示</p>
+                        </div>
+                    </a>
+                    <a href="https://unsplash.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #111, #333)">U</div>
+                        <div class="card-info">
+                            <h3>Unsplash</h3>
+                            <p>免费高清图片</p>
+                        </div>
+                    </a>
+                    <a href="https://iconpark.oceanengine.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #1890ff, #096dd9)">IP</div>
+                        <div class="card-info">
+                            <h3>IconPark</h3>
+                            <p>字节跳动图标库</p>
+                        </div>
+                    </a>
+                    <a href="https://coolors.co" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #0bc5ea, #6b46c1)">🎨</div>
+                        <div class="card-info">
+                            <h3>Coolors</h3>
+                            <p>配色方案生成器</p>
+                        </div>
+                    </a>
+                    <a href="https://fonts.google.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #f44336, #e91e63)">Aa</div>
+                        <div class="card-info">
+                            <h3>Google Fonts</h3>
+                            <p>免费字体库</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 学习资源 -->
+            <section class="nav-section" data-category="学习资源">
+                <div class="section-header">
+                    <h2><span class="section-icon">📚</span> 学习资源</h2>
+                </div>
+                <div class="nav-grid">
+                    <a href="https://www.bilibili.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #fb7299, #e84f7a)">B</div>
+                        <div class="card-info">
+                            <h3>哔哩哔哩</h3>
+                            <p>视频学习平台</p>
+                        </div>
+                    </a>
+                    <a href="https://www.youtube.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #ff0000, #cc0000)">▶</div>
+                        <div class="card-info">
+                            <h3>YouTube</h3>
+                            <p>全球视频平台</p>
+                        </div>
+                    </a>
+                    <a href="https://juejin.cn" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #1e80ff, #0066cc)">掘</div>
+                        <div class="card-info">
+                            <h3>掘金</h3>
+                            <p>技术社区</p>
+                        </div>
+                    </a>
+                    <a href="https://medium.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #12100e, #333)">M</div>
+                        <div class="card-info">
+                            <h3>Medium</h3>
+                            <p>优质文章平台</p>
+                        </div>
+                    </a>
+                    <a href="https://www.zhihu.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #0084ff, #006bd6)">知</div>
+                        <div class="card-info">
+                            <h3>知乎</h3>
+                            <p>知识问答社区</p>
+                        </div>
+                    </a>
+                    <a href="https://leetcode.cn" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #ffa116, #e89b0e)">LC</div>
+                        <div class="card-info">
+                            <h3>LeetCode</h3>
+                            <p>算法刷题平台</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 效率工具 -->
+            <section class="nav-section" data-category="效率工具">
+                <div class="section-header">
+                    <h2><span class="section-icon">⚡</span> 效率工具</h2>
+                </div>
+                <div class="nav-grid">
+                    <a href="https://www.processon.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #1b96f3, #0d7de0)">流</div>
+                        <div class="card-info">
+                            <h3>ProcessOn</h3>
+                            <p>在线流程图思维导图</p>
+                        </div>
+                    </a>
+                    <a href="https://excalidraw.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #6965db, #534dc9)">Ex</div>
+                        <div class="card-info">
+                            <h3>Excalidraw</h3>
+                            <p>手绘风格白板</p>
+                        </div>
+                    </a>
+                    <a href="https://tinypng.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #68b24b, #4e8a37)">🐼</div>
+                        <div class="card-info">
+                            <h3>TinyPNG</h3>
+                            <p>图片压缩工具</p>
+                        </div>
+                    </a>
+                    <a href="https://regex101.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2)">.*</div>
+                        <div class="card-info">
+                            <h3>Regex101</h3>
+                            <p>正则表达式测试</p>
+                        </div>
+                    </a>
+                    <a href="https://carbon.now.sh" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #16181c, #3d3d3d)">C</div>
+                        <div class="card-info">
+                            <h3>Carbon</h3>
+                            <p>代码截图美化</p>
+                        </div>
+                    </a>
+                    <a href="https://jsoncrack.com" target="_blank" rel="noopener" class="nav-card">
+                        <div class="card-icon" style="background: linear-gradient(135deg, #be185d, #9d174d)">{}</div>
+                        <div class="card-info">
+                            <h3>JSON Crack</h3>
+                            <p>JSON 可视化</p>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>🧭 个人导航 · 高效上网从这里开始</p>
+            <p class="footer-sub">Made with ❤️ | <span id="currentYear"></span></p>
+        </div>
+    </footer>
+
+    <!-- 回到顶部 -->
+    <button class="back-to-top" id="backToTop" title="回到顶部">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="m18 15-6-6-6 6"></path>
+        </svg>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>
