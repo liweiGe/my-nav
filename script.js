@@ -99,13 +99,16 @@ backToTop.addEventListener('click', () => {
 const userBtn = document.getElementById('userBtn');
 const authModal = document.getElementById('authModal');
 const authModalClose = document.getElementById('authModalClose');
-const authModalTitle = document.getElementById('authModalTitle');
-const authUsername = document.getElementById('authUsername');
-const authPassword = document.getElementById('authPassword');
+const authPhone = document.getElementById('authPhone');
+const authCode = document.getElementById('authCode');
 const authError = document.getElementById('authError');
 const authSubmit = document.getElementById('authSubmit');
-const authSwitchText = document.getElementById('authSwitchText');
-const authSwitchLink = document.getElementById('authSwitchLink');
+const sendCodeBtn = document.getElementById('sendCodeBtn');
+const codeHint = document.getElementById('codeHint');
+const codeDisplay = document.getElementById('codeDisplay');
+const loginTabs = document.querySelectorAll('.login-tab');
+const panePhone = document.getElementById('panePhone');
+const paneWechat = document.getElementById('paneWechat');
 const bookmarkSection = document.getElementById('bookmarkSection');
 const bookmarkGrid = document.getElementById('bookmarkGrid');
 const bookmarkEmpty = document.getElementById('bookmarkEmpty');
@@ -126,30 +129,22 @@ const panelCount = document.getElementById('panelCount');
 const logoutBtn = document.getElementById('logoutBtn');
 const colorOpts = document.querySelectorAll('.color-opt');
 
-let isLoginMode = true;
 let selectedColor = '#6366f1';
 let editingIndex = -1;
-
-// 简单哈希（非安全级，仅用于本地演示）
-function simpleHash(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) {
-        h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    }
-    return 'h_' + Math.abs(h).toString(36);
-}
+let generatedCode = '';
+let codeTimer = null;
 
 function getCurrentUser() {
     return localStorage.getItem('nav-current-user');
 }
 
-function getUserData(username) {
-    const raw = localStorage.getItem('nav-user-' + username);
+function getUserData(phone) {
+    const raw = localStorage.getItem('nav-user-' + phone);
     return raw ? JSON.parse(raw) : null;
 }
 
-function setUserData(username, data) {
-    localStorage.setItem('nav-user-' + username, JSON.stringify(data));
+function setUserData(phone, data) {
+    localStorage.setItem('nav-user-' + phone, JSON.stringify(data));
 }
 
 function getBookmarks() {
@@ -186,17 +181,16 @@ function updateAuthUI() {
 function openModal(modal) { modal.classList.add('active'); }
 function closeModal(modal) { modal.classList.remove('active'); }
 
-// --- 注册/登录切换 ---
-function setAuthMode(login) {
-    isLoginMode = login;
-    authModalTitle.textContent = login ? '登录' : '注册';
-    authSubmit.textContent = login ? '登录' : '注册';
-    authSwitchText.textContent = login ? '没有账号？' : '已有账号？';
-    authSwitchLink.textContent = login ? '去注册' : '去登录';
-    authError.textContent = '';
-    authUsername.value = '';
-    authPassword.value = '';
-}
+// --- 登录标签页切换 ---
+loginTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        loginTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const isPhone = tab.dataset.tab === 'phone';
+        panePhone.classList.toggle('active', isPhone);
+        paneWechat.classList.toggle('active', !isPhone);
+    });
+});
 
 // 点击用户按钮
 userBtn.addEventListener('click', () => {
@@ -206,7 +200,12 @@ userBtn.addEventListener('click', () => {
         panelCount.textContent = getBookmarks().length;
         openModal(userPanel);
     } else {
-        setAuthMode(true);
+        // 重置登录弹窗状态
+        authPhone.value = '';
+        authCode.value = '';
+        authError.textContent = '';
+        codeHint.classList.add('hidden');
+        generatedCode = '';
         openModal(authModal);
     }
 });
@@ -219,37 +218,60 @@ userPanelClose.addEventListener('click', () => closeModal(userPanel));
     m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
 });
 
-// 切换登录/注册
-authSwitchLink.addEventListener('click', e => {
-    e.preventDefault();
-    setAuthMode(!isLoginMode);
+// 验证手机号格式
+function isValidPhone(phone) {
+    return /^1[3-9]\d{9}$/.test(phone);
+}
+
+// 发送验证码（模拟）
+sendCodeBtn.addEventListener('click', () => {
+    const phone = authPhone.value.trim();
+    authError.textContent = '';
+    if (!isValidPhone(phone)) {
+        authError.textContent = '请输入正确的11位手机号';
+        return;
+    }
+    // 生成6位随机验证码
+    generatedCode = String(Math.floor(100000 + Math.random() * 900000));
+    codeDisplay.textContent = generatedCode;
+    codeHint.classList.remove('hidden');
+
+    // 倒计时 60 秒
+    let seconds = 60;
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = seconds + 's';
+    if (codeTimer) clearInterval(codeTimer);
+    codeTimer = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+            clearInterval(codeTimer);
+            codeTimer = null;
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.textContent = '获取验证码';
+        } else {
+            sendCodeBtn.textContent = seconds + 's';
+        }
+    }, 1000);
 });
 
-// 提交登录/注册
+// 提交登录
 authSubmit.addEventListener('click', () => {
-    const username = authUsername.value.trim();
-    const password = authPassword.value;
+    const phone = authPhone.value.trim();
+    const code = authCode.value.trim();
     authError.textContent = '';
 
-    if (!username || username.length < 2) { authError.textContent = '用户名至少2个字符'; return; }
-    if (!password || password.length < 4) { authError.textContent = '密码至少4个字符'; return; }
+    if (!isValidPhone(phone)) { authError.textContent = '请输入正确的11位手机号'; return; }
+    if (!generatedCode) { authError.textContent = '请先获取验证码'; return; }
+    if (code !== generatedCode) { authError.textContent = '验证码错误'; return; }
 
-    const hashed = simpleHash(password);
-
-    if (isLoginMode) {
-        const data = getUserData(username);
-        if (!data) { authError.textContent = '用户不存在'; return; }
-        if (data.pwd !== hashed) { authError.textContent = '密码错误'; return; }
-        localStorage.setItem('nav-current-user', username);
-        closeModal(authModal);
-        updateAuthUI();
-    } else {
-        if (getUserData(username)) { authError.textContent = '用户名已存在'; return; }
-        setUserData(username, { pwd: hashed, bookmarks: [] });
-        localStorage.setItem('nav-current-user', username);
-        closeModal(authModal);
-        updateAuthUI();
+    // 如果用户不存在则自动注册
+    if (!getUserData(phone)) {
+        setUserData(phone, { bookmarks: [] });
     }
+    localStorage.setItem('nav-current-user', phone);
+    generatedCode = '';
+    closeModal(authModal);
+    updateAuthUI();
 });
 
 // 退出登录
