@@ -95,108 +95,273 @@ backToTop.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// ========== 热点资讯 ==========
-const MOMOYU_API = 'https://momoyu.cc/api/hot/list';
+// ========== 用户认证与收藏系统 ==========
+const userBtn = document.getElementById('userBtn');
+const authModal = document.getElementById('authModal');
+const authModalClose = document.getElementById('authModalClose');
+const authModalTitle = document.getElementById('authModalTitle');
+const authUsername = document.getElementById('authUsername');
+const authPassword = document.getElementById('authPassword');
+const authError = document.getElementById('authError');
+const authSubmit = document.getElementById('authSubmit');
+const authSwitchText = document.getElementById('authSwitchText');
+const authSwitchLink = document.getElementById('authSwitchLink');
+const bookmarkSection = document.getElementById('bookmarkSection');
+const bookmarkGrid = document.getElementById('bookmarkGrid');
+const bookmarkEmpty = document.getElementById('bookmarkEmpty');
+const addBookmarkBtn = document.getElementById('addBookmarkBtn');
+const bookmarkModal = document.getElementById('bookmarkModal');
+const bookmarkModalClose = document.getElementById('bookmarkModalClose');
+const bookmarkModalTitle = document.getElementById('bookmarkModalTitle');
+const bmName = document.getElementById('bmName');
+const bmUrl = document.getElementById('bmUrl');
+const bmDesc = document.getElementById('bmDesc');
+const bmIcon = document.getElementById('bmIcon');
+const bmError = document.getElementById('bmError');
+const bmSubmit = document.getElementById('bmSubmit');
+const userPanel = document.getElementById('userPanel');
+const userPanelClose = document.getElementById('userPanelClose');
+const panelUsername = document.getElementById('panelUsername');
+const panelCount = document.getElementById('panelCount');
+const logoutBtn = document.getElementById('logoutBtn');
+const colorOpts = document.querySelectorAll('.color-opt');
 
-let currentTrending = 'weibo';
-let momoyuData = null;
-let momoyuFetchTime = 0;
+let isLoginMode = true;
+let selectedColor = '#6366f1';
+let editingIndex = -1;
 
-const trendingList = document.getElementById('trendingList');
-const trendingLoading = document.getElementById('trendingLoading');
-const trendingError = document.getElementById('trendingError');
-const trendingUpdateTime = document.getElementById('trendingUpdateTime');
-const refreshBtn = document.getElementById('refreshBtn');
-const retryBtn = document.getElementById('retryBtn');
-const trendingTabs = document.querySelectorAll('.trending-tab');
-
-async function fetchAllTrending(forceRefresh) {
-    // 缓存 5 分钟
-    if (!forceRefresh && momoyuData && (Date.now() - momoyuFetchTime < 300000)) {
-        return momoyuData;
+// 简单哈希（非安全级，仅用于本地演示）
+function simpleHash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+        h = ((h << 5) - h + str.charCodeAt(i)) | 0;
     }
+    return 'h_' + Math.abs(h).toString(36);
+}
 
-    const res = await fetch(MOMOYU_API);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    if (json.status !== 100000 || !json.data) throw new Error('Invalid response');
+function getCurrentUser() {
+    return localStorage.getItem('nav-current-user');
+}
 
-    // 按 source_key 建立索引
-    const map = {};
-    json.data.forEach(function(platform) {
-        map[platform.source_key] = platform.data || [];
+function getUserData(username) {
+    const raw = localStorage.getItem('nav-user-' + username);
+    return raw ? JSON.parse(raw) : null;
+}
+
+function setUserData(username, data) {
+    localStorage.setItem('nav-user-' + username, JSON.stringify(data));
+}
+
+function getBookmarks() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    const data = getUserData(user);
+    return data ? (data.bookmarks || []) : [];
+}
+
+function saveBookmarks(bookmarks) {
+    const user = getCurrentUser();
+    if (!user) return;
+    const data = getUserData(user) || {};
+    data.bookmarks = bookmarks;
+    setUserData(user, data);
+}
+
+// --- 登录状态 UI ---
+function updateAuthUI() {
+    const user = getCurrentUser();
+    if (user) {
+        userBtn.classList.add('logged-in');
+        userBtn.title = user;
+        bookmarkSection.style.display = '';
+        renderBookmarks();
+    } else {
+        userBtn.classList.remove('logged-in');
+        userBtn.title = '登录/用户';
+        bookmarkSection.style.display = 'none';
+    }
+}
+
+// --- 弹窗通用 ---
+function openModal(modal) { modal.classList.add('active'); }
+function closeModal(modal) { modal.classList.remove('active'); }
+
+// --- 注册/登录切换 ---
+function setAuthMode(login) {
+    isLoginMode = login;
+    authModalTitle.textContent = login ? '登录' : '注册';
+    authSubmit.textContent = login ? '登录' : '注册';
+    authSwitchText.textContent = login ? '没有账号？' : '已有账号？';
+    authSwitchLink.textContent = login ? '去注册' : '去登录';
+    authError.textContent = '';
+    authUsername.value = '';
+    authPassword.value = '';
+}
+
+// 点击用户按钮
+userBtn.addEventListener('click', () => {
+    const user = getCurrentUser();
+    if (user) {
+        panelUsername.textContent = user;
+        panelCount.textContent = getBookmarks().length;
+        openModal(userPanel);
+    } else {
+        setAuthMode(true);
+        openModal(authModal);
+    }
+});
+
+// 关闭弹窗
+authModalClose.addEventListener('click', () => closeModal(authModal));
+bookmarkModalClose.addEventListener('click', () => closeModal(bookmarkModal));
+userPanelClose.addEventListener('click', () => closeModal(userPanel));
+[authModal, bookmarkModal, userPanel].forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) closeModal(m); });
+});
+
+// 切换登录/注册
+authSwitchLink.addEventListener('click', e => {
+    e.preventDefault();
+    setAuthMode(!isLoginMode);
+});
+
+// 提交登录/注册
+authSubmit.addEventListener('click', () => {
+    const username = authUsername.value.trim();
+    const password = authPassword.value;
+    authError.textContent = '';
+
+    if (!username || username.length < 2) { authError.textContent = '用户名至少2个字符'; return; }
+    if (!password || password.length < 4) { authError.textContent = '密码至少4个字符'; return; }
+
+    const hashed = simpleHash(password);
+
+    if (isLoginMode) {
+        const data = getUserData(username);
+        if (!data) { authError.textContent = '用户不存在'; return; }
+        if (data.pwd !== hashed) { authError.textContent = '密码错误'; return; }
+        localStorage.setItem('nav-current-user', username);
+        closeModal(authModal);
+        updateAuthUI();
+    } else {
+        if (getUserData(username)) { authError.textContent = '用户名已存在'; return; }
+        setUserData(username, { pwd: hashed, bookmarks: [] });
+        localStorage.setItem('nav-current-user', username);
+        closeModal(authModal);
+        updateAuthUI();
+    }
+});
+
+// 退出登录
+logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('nav-current-user');
+    closeModal(userPanel);
+    updateAuthUI();
+});
+
+// --- 收藏管理 ---
+function renderBookmarks() {
+    const bookmarks = getBookmarks();
+    if (bookmarks.length === 0) {
+        bookmarkEmpty.style.display = '';
+        bookmarkGrid.querySelectorAll('.nav-card').forEach(c => c.remove());
+        return;
+    }
+    bookmarkEmpty.style.display = 'none';
+    // 清除旧的卡片
+    bookmarkGrid.querySelectorAll('.nav-card').forEach(c => c.remove());
+    bookmarks.forEach((bm, idx) => {
+        const card = document.createElement('a');
+        card.className = 'nav-card';
+        card.href = bm.url;
+        card.target = '_blank';
+        card.rel = 'noopener';
+        card.innerHTML =
+            '<div class="card-icon" style="background:' + escapeAttr(bm.color || '#6366f1') + '">' + escapeHtml(bm.icon || '⭐') + '</div>' +
+            '<div class="card-info"><h3>' + escapeHtml(bm.name) + '</h3><p>' + escapeHtml(bm.desc || '') + '</p></div>' +
+            '<button class="card-delete" data-idx="' + idx + '" title="删除">&times;</button>';
+        bookmarkGrid.appendChild(card);
     });
-    momoyuData = map;
-    momoyuFetchTime = Date.now();
-    return map;
-}
-
-async function showTrending(type, forceRefresh) {
-    trendingList.classList.add('hidden');
-    trendingError.classList.remove('visible');
-    trendingLoading.classList.remove('hidden');
-
-    try {
-        const data = await fetchAllTrending(forceRefresh);
-        const items = data[type] || [];
-        if (items.length === 0) throw new Error('No data');
-        renderTrending(items);
-        trendingUpdateTime.textContent = '更新于 ' + new Date(momoyuFetchTime).toLocaleTimeString('zh-CN');
-        trendingLoading.classList.add('hidden');
-    } catch (_) {
-        trendingLoading.classList.add('hidden');
-        trendingError.classList.add('visible');
-    }
-}
-
-function renderTrending(items) {
-    var list = items.slice(0, 30);
-    trendingList.innerHTML = list.map(function(item, i) {
-        var rank = i + 1;
-        var rankClass = rank <= 3 ? ' top-' + rank : '';
-        var title = escapeHtml(item.title || '');
-        var hot = item.extra || '';
-        var url = item.link || item.url || '#';
-        return '<a class="trending-item" href="' + url + '" target="_blank" rel="noopener">' +
-            '<span class="trending-rank' + rankClass + '">' + rank + '</span>' +
-            '<span class="trending-title">' + title + '</span>' +
-            (hot ? '<span class="trending-hot">' + escapeHtml(hot) + '</span>' : '') +
-            '</a>';
-    }).join('');
-    trendingList.classList.remove('hidden');
 }
 
 function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
 }
 
-// Tab 切换
-trendingTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        trendingTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentTrending = tab.dataset.type;
-        showTrending(currentTrending, false);
+function escapeAttr(str) {
+    return str.replace(/[&"'<>]/g, c => ({ '&': '&amp;', '"': '&quot;', "'": '&#39;', '<': '&lt;', '>': '&gt;' })[c]);
+}
+
+// 删除收藏（事件委托）
+bookmarkGrid.addEventListener('click', e => {
+    const del = e.target.closest('.card-delete');
+    if (del) {
+        e.preventDefault();
+        e.stopPropagation();
+        const idx = parseInt(del.dataset.idx, 10);
+        const bookmarks = getBookmarks();
+        if (idx >= 0 && idx < bookmarks.length) {
+            bookmarks.splice(idx, 1);
+            saveBookmarks(bookmarks);
+            renderBookmarks();
+        }
+    }
+});
+
+// 颜色选择
+colorOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+        colorOpts.forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        selectedColor = opt.dataset.color;
     });
 });
 
-// 刷新
-refreshBtn.addEventListener('click', () => {
-    refreshBtn.classList.add('spinning');
-    showTrending(currentTrending, true).finally(() => {
-        setTimeout(() => refreshBtn.classList.remove('spinning'), 500);
+// 打开添加收藏弹窗
+addBookmarkBtn.addEventListener('click', () => {
+    editingIndex = -1;
+    bookmarkModalTitle.textContent = '添加收藏';
+    bmName.value = '';
+    bmUrl.value = '';
+    bmDesc.value = '';
+    bmIcon.value = '';
+    bmError.textContent = '';
+    selectedColor = '#6366f1';
+    colorOpts.forEach(o => {
+        o.classList.toggle('active', o.dataset.color === selectedColor);
     });
+    openModal(bookmarkModal);
 });
 
-// 重试
-retryBtn.addEventListener('click', () => {
-    showTrending(currentTrending, true);
+// 保存收藏
+bmSubmit.addEventListener('click', () => {
+    const name = bmName.value.trim();
+    const url = bmUrl.value.trim();
+    const desc = bmDesc.value.trim();
+    const icon = bmIcon.value.trim() || '⭐';
+    bmError.textContent = '';
+
+    if (!name) { bmError.textContent = '请输入网站名称'; return; }
+    if (!url) { bmError.textContent = '请输入网站地址'; return; }
+    try { new URL(url); } catch (_) { bmError.textContent = '请输入有效的网址（以 http 开头）'; return; }
+
+    const bookmarks = getBookmarks();
+    const item = { name, url, desc, icon, color: selectedColor };
+
+    if (editingIndex >= 0) {
+        bookmarks[editingIndex] = item;
+    } else {
+        bookmarks.push(item);
+    }
+    saveBookmarks(bookmarks);
+    closeModal(bookmarkModal);
+    renderBookmarks();
 });
 
-// 初始加载
-showTrending('weibo', false);
+// 初始化用户状态
+updateAuthUI();
 
 // ========== 快捷键 ==========
 document.addEventListener('keydown', e => {
