@@ -30,12 +30,6 @@
                     </svg>
                     <input type="text" id="searchInput" placeholder="搜索网站..." autocomplete="off">
                 </div>
-                <button class="user-btn" id="userBtn" title="登录/用户">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </button>
                 <button class="theme-toggle" id="themeToggle" title="切换主题">
                     <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="5"></circle>
@@ -332,7 +326,7 @@
             </section>
 
             <!-- 我的收藏 -->
-            <section class="nav-section" id="bookmarkSection" style="display:none">
+            <section class="nav-section" id="bookmarkSection">
                 <div class="section-header">
                     <h2><span class="section-icon">📌</span> 我的收藏</h2>
                     <button class="add-bookmark-btn" id="addBookmarkBtn" title="添加收藏">
@@ -342,64 +336,13 @@
                 </div>
                 <div class="nav-grid" id="bookmarkGrid">
                     <div class="bookmark-empty" id="bookmarkEmpty">
-                        <p>📌 登录后可添加自定义收藏网站</p>
+                        <p>📌 点击右上角「添加」按钮收藏常用网站</p>
                     </div>
                 </div>
             </section>
 
         </div>
     </main>
-
-    <!-- 登录弹窗 -->
-    <div class="modal-overlay" id="authModal">
-        <div class="modal">
-            <button class="modal-close" id="authModalClose">&times;</button>
-            <div class="modal-header">
-                <h3>登录</h3>
-            </div>
-            <div class="login-tabs">
-                <button class="login-tab active" data-tab="phone">📱 手机号登录</button>
-                <button class="login-tab" data-tab="wechat">💬 微信扫码登录</button>
-            </div>
-            <div class="modal-body">
-                <!-- 手机号登录 -->
-                <div class="login-pane active" id="panePhone">
-                    <div class="form-group">
-                        <label>手机号</label>
-                        <input type="tel" id="authPhone" placeholder="请输入手机号" maxlength="11" autocomplete="tel">
-                    </div>
-                    <div class="form-group">
-                        <label>验证码</label>
-                        <div class="code-input-row">
-                            <input type="text" id="authCode" placeholder="请输入验证码" maxlength="6" autocomplete="one-time-code">
-                            <button class="send-code-btn" id="sendCodeBtn">获取验证码</button>
-                        </div>
-                    </div>
-                    <div class="code-hint hidden" id="codeHint">
-                        <span>📩 模拟验证码：<strong id="codeDisplay"></strong></span>
-                    </div>
-                    <p class="auth-error" id="authError"></p>
-                    <button class="auth-submit" id="authSubmit">登录 / 自动注册</button>
-                    <p class="login-tip">未注册的手机号将自动创建账号</p>
-                </div>
-                <!-- 微信扫码登录 -->
-                <div class="login-pane" id="paneWechat">
-                    <div class="wechat-qr">
-                        <div class="qr-placeholder">
-                            <svg viewBox="0 0 200 200" width="160" height="160">
-                                <rect width="200" height="200" rx="12" fill="#f0fdf4"/>
-                                <text x="100" y="90" text-anchor="middle" font-size="48">💬</text>
-                                <text x="100" y="130" text-anchor="middle" font-size="14" fill="#16a34a">微信扫码登录</text>
-                                <text x="100" y="155" text-anchor="middle" font-size="11" fill="#86efac">功能开发中</text>
-                            </svg>
-                        </div>
-                        <p class="qr-tip">请使用微信扫描二维码登录</p>
-                        <p class="qr-sub">该功能需要后端服务支持，暂未开放</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- 添加收藏弹窗 -->
     <div class="modal-overlay" id="bookmarkModal">
@@ -440,20 +383,6 @@
                 </div>
                 <p class="auth-error" id="bmError"></p>
                 <button class="auth-submit" id="bmSubmit">保存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 用户面板弹窗 -->
-    <div class="modal-overlay" id="userPanel">
-        <div class="modal modal-sm">
-            <button class="modal-close" id="userPanelClose">&times;</button>
-            <div class="modal-header">
-                <h3>👤 <span id="panelUsername"></span></h3>
-            </div>
-            <div class="modal-body" style="text-align:center">
-                <p class="user-stats">收藏了 <strong id="panelCount">0</strong> 个网站</p>
-                <button class="auth-submit logout-btn" id="logoutBtn">退出登录</button>
             </div>
         </div>
     </div>
